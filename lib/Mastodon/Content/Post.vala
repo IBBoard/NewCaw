@@ -40,7 +40,8 @@ public class Backend.Mastodon.Post : Backend.Post {
     }
 
     // Attempt to retrieve the user from storage
-    string url    = json.get_string_member ("url");
+    // Use URI because reblogs don't have a URL
+    string url    = json.get_string_member ("uri");
     string domain = Utils.ParseUtils.strip_domain (url);
     string name   = json.get_string_member ("id");
     string id     = @"$(name)@$(domain)";
