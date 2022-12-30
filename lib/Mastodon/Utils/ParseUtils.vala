@@ -35,13 +35,15 @@ namespace Backend.Mastodon.Utils.ParseUtils {
   private string strip_domain (string url) {
     // Run a Regex to get the domain
     try {
-      var regex = new Regex ("https?://(www.)?(.*?)/.*");
-      return regex.replace (
-        url,
-        url.length,
-        0,
-        "\\2"
-      );
+      var regex = new Regex ("https?://(?:www.)?([^/]+)/.*");
+      GLib.MatchInfo match_info;
+      var matches = regex.match (url, 0, out match_info);
+      if (matches) {
+        return match_info.fetch (1);
+      }
+      else {
+        error(@"No domain found in URL: $(url)");
+      }
     } catch (RegexError e) {
       error (@"Error while parsing domain: $(e.message)");
     }
