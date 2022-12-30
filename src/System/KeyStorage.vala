@@ -164,7 +164,8 @@ public class KeyStorage : Object {
     // Create the attributes
     string platform_name     = PlatformEnum.get_platform_for_account (account).to_string ();
     var    attributes        = new HashTable<string,string> (str_hash, str_equal);
-    string token_label       = @"Access Token for Account \"$(account.username)\" on $(platform_name)";
+    // It would be better to log a username here, but we won't necessarily have all details on the account yet
+    string token_label       = @"Access Token for \"$(identifier)\" on $(platform_name)";
     attributes["type"]       = "Account";
     attributes["identifier"] = identifier;
     attributes["secret"]     = "false";
