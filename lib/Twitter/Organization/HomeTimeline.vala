@@ -81,6 +81,11 @@ public class Backend.Twitter.HomeTimeline : Backend.HomeTimeline {
     var store = post_list as ListStore;
     foreach (Backend.Post post in session.load_post_list (json)) {
       store.insert_sorted (post, compare_items);
+      if (post.id > last_post_id) {
+        // Twitter Snowflake IDs are a timestamp packed with additional data for multi-site concurrency,
+        // so we can assume that they're orderable and take the latest one as the last post we saw
+        last_post_id = post.id;
+      }
     }
   }
 
