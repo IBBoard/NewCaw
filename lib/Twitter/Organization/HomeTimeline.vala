@@ -52,20 +52,24 @@ public class Backend.Twitter.HomeTimeline : Backend.HomeTimeline {
       header_i++;
     }
   }
-  
-  /**
-   * Calls the API to get the posts for the Collection.
-   *
-   * @throws Error Any error that happened while pulling the posts.
-   */
-  public override async void pull_posts () throws Error {
+
+  public override async void pull_newer_posts () throws Error {
+    yield pull_posts_with_anchor ("since_id", last_post_id);
+  }
+
+  public override async void pull_older_posts () throws Error {
+    yield pull_posts_with_anchor ("until_id", first_post_id);
+  }
+
+  private async void pull_posts_with_anchor (string? key, string? value) throws Error {
+    debug("Pulling Twitter home posts with %s=%s", key, value);
     // Create the proxy call
     Rest.ProxyCall call = session.create_call ();
     call.set_method ("GET");
     call.set_function (@"users/$(account.id)/timelines/reverse_chronological");
     call.add_param ("max_results", "50");
-    if (last_post_id != null) {
-      call.add_param ("since_id", last_post_id);
+    if (key != null && value != null) {
+      call.add_param (key, value);
     }
     Server.append_post_fields (ref call);
 
@@ -78,15 +82,7 @@ public class Backend.Twitter.HomeTimeline : Backend.HomeTimeline {
     }
 
     // Load the posts in the post list
-    var store = post_list as ListStore;
-    foreach (Backend.Post post in session.load_post_list (json)) {
-      store.insert_sorted (post, compare_items);
-      if (post.id > last_post_id) {
-        // Twitter Snowflake IDs are a timestamp packed with additional data for multi-site concurrency,
-        // so we can assume that they're orderable and take the latest one as the last post we saw
-        last_post_id = post.id;
-      }
-    }
+    add_posts (session.load_post_list (json));
   }
 
 }
