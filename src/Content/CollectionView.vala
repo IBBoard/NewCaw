@@ -126,7 +126,6 @@ public class CollectionView : Gtk.Widget {
    * Run at construction of an widget.
    */
   construct {
-    debug("Construct(CollectionView) for %s", this.get_type ().name ());
     // Create a list filter from the collection
     list_filter = new Gtk.CustomFilter (filter_items);
 
@@ -432,16 +431,25 @@ public class CollectionView : Gtk.Widget {
 public class RefreshingCollectionView : CollectionView {
   private uint refresh_source_id;
   private uint poll_interval = 2 * 60;
+  private bool loading_old_posts = false;
   public double scroll_end_offset {get; set; default = 200;}
 
   construct {
-    debug("Construct(RefreshCollectionView) for %s", this.get_type ().name ());
-
     // Backfill old posts as we scroll
     scroll_window.vadjustment.value_changed.connect (() => {
       double max = scroll_window.vadjustment.upper - scroll_window.vadjustment.page_size;
       if (scroll_window.vadjustment.value >= max - scroll_end_offset) {
-        ((Backend.ExpandableCollection)collection).pull_older_posts.begin ();
+        lock (loading_old_posts) {
+          if (loading_old_posts) {
+            return;
+          }
+          loading_old_posts = true;
+        }
+        ((Backend.ExpandableCollection)collection).pull_older_posts.begin (() => {
+          lock (loading_old_posts) {
+            loading_old_posts = false;
+          }
+        });
       }
     });
   }
@@ -466,7 +474,6 @@ public class RefreshingCollectionView : CollectionView {
 
   private bool poll_for_posts() {
     pull_posts ();
-    refresh_source_id = Timeout.add_seconds (poll_interval, poll_for_posts, 0);
     return true;
   }
 }
