@@ -157,6 +157,54 @@ public partial class Backend.Twitter.Session : Backend.Session {
     return post;
   }
 
+  public override async Backend.Post favourite_post (Backend.Post post) throws Error {
+    // Create the proxy call
+    Rest.ProxyCall call = proxy.new_call ();
+    call.set_method ("POST");
+    call.set_function (@"users/$(account.id)/likes");
+    // TODO: Add a JSON REST call class to be able to pass a body
+    // https://gitlab.gnome.org/GNOME/librest/-/issues/1
+
+    // Send the message and return the post as-is because Twitter just gives us "okay" responses
+    yield server.call (call);
+    return post;
+  }
+
+  public override async Backend.Post unfavourite_post (Backend.Post post) throws Error {
+    // Create the proxy call
+    Rest.ProxyCall call = proxy.new_call ();
+    call.set_method ("DELETE");
+    call.set_function (@"api/v1/statuses/$(account.id)/unfavourite");
+
+    // Send the message and return the post as-is because Twitter just gives us "okay" responses
+    yield server.call (call);
+    return post;
+  }
+
+  public override async Backend.Post reblog_post (Backend.Post post) throws Error {
+    // Create the proxy call
+    Rest.ProxyCall call = proxy.new_call ();
+    call.set_method ("POST");
+    call.set_function (@"users/$(account.id)/retweets");
+    // TODO: Add a JSON REST call class to be able to pass a body
+    // https://gitlab.gnome.org/GNOME/librest/-/issues/1
+
+    // Send the message and return the post as-is because Twitter just gives us "okay" responses
+    yield server.call (call);
+    return post;
+  }
+
+  public override async Backend.Post unreblog_post (Backend.Post post) throws Error {
+    // Create the proxy call
+    Rest.ProxyCall call = proxy.new_call ();
+    call.set_method ("DELETE");
+    call.set_function (@"users/$(account.id)/retweets/$(post.id)");
+
+    // Send the message and return the post as-is because Twitter just gives us "okay" responses
+    yield server.call (call);
+    return post;
+  }
+
   /**
    * Retrieves an user for an specified id.
    *
