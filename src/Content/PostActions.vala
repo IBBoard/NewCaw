@@ -52,24 +52,34 @@ public class PostActions : Gtk.Widget {
     set {
       displayed_post = value;
 
-      // Set the information on the UI
-      likes_counter.label   = displayed_post != null ? DisplayUtils.shortened_metric (displayed_post.liked_count)    : "(null)";
-      reposts_counter.label = displayed_post != null ? DisplayUtils.shortened_metric (displayed_post.reposted_count) : "(null)";
-      replies_counter.label = displayed_post != null ? DisplayUtils.shortened_metric (displayed_post.replied_count)  : "(null)";
-      likes_button.sensitive = displayed_post != null;
-      reposts_button.sensitive = displayed_post != null;
-      replies_button.sensitive = displayed_post != null;
-
-      // Set up options menu
       if (displayed_post != null) {
+        likes_counter.label   = DisplayUtils.shortened_metric (displayed_post.liked_count);
+        likes_button.sensitive = true;
+        reposts_counter.label = DisplayUtils.shortened_metric (displayed_post.reposted_count);
+        reposts_button.sensitive = true;
+        replies_counter.label = DisplayUtils.shortened_metric (displayed_post.replied_count);
+        replies_button.sensitive = true;
+
+        debug("Likes: %d; Label: %s; Liked: %s", displayed_post.liked_count, likes_counter.label, displayed_post.is_favourited ? "yes" : "no");
+
         string open_link_label   = _("Open on %s").printf (displayed_post.domain);
         var    post_options_menu = new Menu ();
         post_options_menu.append (open_link_label, "post.open-url");
         post_options_menu.append (_("Copy Link to Clipboard"), "post.copy-url");
         options_button.menu_model = post_options_menu;
       } else {
+        likes_counter.label   =  "(null)";
+        likes_button.sensitive = false;
+        reposts_counter.label = "(null)";
+        reposts_button.sensitive = false;
+        replies_counter.label = "(null)";
+        replies_button.sensitive = false;
+
         options_button.menu_model = null;
       }
+
+      DisplayUtils.conditional_button_content (displayed_post != null && displayed_post.is_favourited, likes_counter, "liked", "liked-symbolic", "not-liked-symbolic");
+      DisplayUtils.conditional_button_content (displayed_post != null && displayed_post.is_reposted, reposts_counter, "reposted", "reposted-symbolic", "repost-symbolic");
     }
   }
 
@@ -94,6 +104,7 @@ public class PostActions : Gtk.Widget {
           var returned_post = post.session.favourite_post.end(res);
           // Update the post in case the server is one that gives us an updated object
           // FIXME: Doesn't seem to be updating!
+          debug("Passing in %d likes; liked? %s", returned_post.liked_count, returned_post.is_favourited ? "yes" : "no");
           post = returned_post;
         }
         catch (Error e) {
@@ -105,9 +116,10 @@ public class PostActions : Gtk.Widget {
       post.session.unfavourite_post.begin (post, (obj, res) => {
         try {
           likes_button.sensitive = true;
-          var returned_post = post.session.favourite_post.end(res);
+          var returned_post = post.session.unfavourite_post.end(res);
           // Update the post in case the server is one that gives us an updated object
           post = returned_post;
+          debug("Passing in %d likes; liked? %s", returned_post.liked_count, returned_post.is_favourited ? "yes" : "no");
         }
         catch (Error e) {
           // pass
@@ -123,9 +135,11 @@ public class PostActions : Gtk.Widget {
       post.session.reblog_post.begin (post, (obj, res) => {
         try {
           reposts_button.sensitive = true;
-          var returned_post = post.session.favourite_post.end(res);
+          var returned_post = post.session.reblog_post.end(res);
           // TBC whether we want to do anything with this - like inject it into a stream
           // TODO: Update counts based on the nested values
+          // For now we set the current post back, because we don't check for change
+          post = displayed_post;
         }
         catch (Error e) {
           // pass
@@ -136,8 +150,10 @@ public class PostActions : Gtk.Widget {
       post.session.unreblog_post.begin (post, (obj, res) => {
         try {
           reposts_button.sensitive = true;
-          var returned_post = post.session.favourite_post.end(res);
+          var returned_post = post.session.reblog_post.end(res);
           // FIXME: How can we pass a message up that this repost should be deleted?
+          // For now we set the current post back, because we don't check for change
+          post = displayed_post;
         }
         catch (Error e) {
           // pass
