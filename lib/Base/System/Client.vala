@@ -82,12 +82,12 @@ public partial class Backend.Client : Initable {
   /**
    * All sessions that are active with this client.
    */
-  public SessionList sessions { get; default = new SessionList(); }
+  public SessionList sessions { get; construct; }
 
   /**
    * All servers that are active with this client.
    */
-  public ServerList servers { get; default = new ServerList(); }
+  public ServerList servers { get; construct; }
 
   /**
    * Configures the client instance.
@@ -98,17 +98,15 @@ public partial class Backend.Client : Initable {
    * @param redirect_uri An optional redirect uri.
    * @param twitter_oauth_key An optional OAuth 2 key for Twitter (if used)
    */
-  public void configure (string id, string name, string website, string? redirect_uri = null, string? twitter_oauth_key = null) throws Error {
-    this.id = id;
-    this.name = name;
-    this.website = website;
-    this.redirect_uri = redirect_uri;
-
-    // Initialize the instance
-#if SUPPORT_TWITTER
-    // FIXME: How can we do this cleanly for the `SingleInstance` without creating unused variables?
-    var twitter_server = new Backend.Twitter.Server (twitter_oauth_key);
-#endif
+  public Client (string id, string name, string website, string? redirect_uri = null) throws Error {
+    Object (
+      id: id,
+      name: name,
+      website: website,
+      redirect_uri: redirect_uri,
+      sessions: new SessionList (),
+      servers: new ServerList ()
+    );
     init ();
 
     // Set the global instance
