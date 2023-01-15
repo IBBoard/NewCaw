@@ -62,7 +62,7 @@ public partial class Backend.Twitter.Session : Backend.Session {
    * This is an platform-specific implementation of the abstract method
    * defined in the base class, for more details see the base method.
    */
-  internal override Backend.Post load_post (Json.Object data, bool force_load = false) {
+  internal override Backend.Post load_post (Json.Object data) {
     // Split the post data object
     Json.Object object;
     if (data.has_member ("data")) {
@@ -75,7 +75,7 @@ public partial class Backend.Twitter.Session : Backend.Session {
     string id = object.get_string_member ("id");
 
     // Check if the post is already present in memory
-    if (pulled_posts.contains (id) && ! force_load) {
+    if (pulled_posts.contains (id)) {
       return pulled_posts [id];
     }
 
