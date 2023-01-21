@@ -72,7 +72,7 @@ public abstract class Backend.ClientList <T> : ListModel, Object {
    *
    * @return The right item if found, else null.
    */
-  internal T? find <G> (G needle, ArraySearchFunc<G,T> equal_func) {
+  internal T? find <G> (G needle, ArraySearchFunc<T, G> equal_func) {
     uint? index;
     if (store.find_custom <G> (needle, equal_func, out index)) {
       return store.get (index);
@@ -102,13 +102,6 @@ public abstract class Backend.ClientList <T> : ListModel, Object {
    * @throws Error Errors when adding the access token doesn't work.
    */
   internal void add (T item) throws Error {
-#if SUPPORT_TWITTER
-    // Don't add Twitter servers
-    if (item is Backend.Twitter.Server) {
-      return;
-    }
-#endif
-
     // Stop if item is already in list
     if (store.find (item)) {
       return;

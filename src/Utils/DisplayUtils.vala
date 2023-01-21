@@ -146,7 +146,7 @@ namespace DisplayUtils {
    *
    * @param user The user to be displayed.
    *
-   * @return The string with the username, prefixed if Twitter user.
+   * @return The string of the username with an "@" prefix
    */
   public string prefix_username (Backend.User user) {
     var platform = Backend.PlatformEnum.for_user (user);
@@ -159,10 +159,6 @@ namespace DisplayUtils {
         } else {
           return "@" + user.username;
         }
-#endif
-#if SUPPORT_TWITTER
-      case TWITTER:
-        return "@" + user.username;
 #endif
       default:
         return user.username;
