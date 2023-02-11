@@ -72,3 +72,8 @@ endif
 
 # Install icons for Cawbird
 subdir('icons')
+
+gnome.compile_schemas(
+  build_by_default: true,
+  depend_files: ['uk.co.ibboard.Cawbird.gschema.xml']
+)

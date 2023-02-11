@@ -6,19 +6,19 @@
       <description>
         Display user avatars round.
       </description>
-      <default>true</default>
+      <default>false</default>
     </key>
     <key type="b" name="trailing-tags">
       <description>
         If to show tags after the text.
       </description>
-      <default>false</default>
+      <default>true</default>
     </key>
     <key type="b" name="double-click-activation">
       <description>
         If a double click is required to activate posts.
       </description>
-      <default>false</default>
+      <default>true</default>
     </key>
 	</schema>
   <!-- Window Sizes -->
